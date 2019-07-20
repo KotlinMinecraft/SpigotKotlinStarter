@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    `maven-publish`
     kotlin("jvm")
     id("net.minecrell.plugin-yml.bukkit")
     id("com.github.johnrengelman.shadow")
@@ -48,4 +49,27 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<ShadowJar> {
     classifier = null
+}
+
+val sources by tasks.registering(Jar::class) {
+    baseName = project.name
+    classifier = "sources"
+    from(sourceSets.main.get().allSource)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = project.name.toLowerCase()
+
+            from(components["java"])
+            artifact(sources.get())
+
+            pom {
+                name.set(plugin_name)
+                description.set(plugin_description)
+                url.set(plugin_website)
+            }
+        }
+    }
 }
